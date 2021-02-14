@@ -35,6 +35,7 @@ open class Issue: Codable {
     open var createdAt: Date?
     open var updatedAt: Date?
     open var closedBy: User?
+    open var pullRequest: PullRequest?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -57,6 +58,21 @@ open class Issue: Codable {
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case closedBy = "closed_by"
+        case pullRequest = "pull_request"
+    }
+    
+    public class PullRequest: Codable {
+        open var url: URL?
+        open var htmlURL: URL?
+        open var diffURL: URL?
+        open var patchURL: URL?
+        
+        enum CodingKeys: String, CodingKey {
+            case url
+            case htmlURL = "html_url"
+            case diffURL = "diff_url"
+            case patchURL = "patch_url"
+        }
     }
 }
 

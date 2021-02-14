@@ -105,6 +105,23 @@ public extension Octokit {
             }
         }
     }
+    
+    @discardableResult
+    func pullRequest(_ session: RequestKitURLSession = URLSession.shared,
+                            byURL url: URL,
+                            completion: @escaping (_ response: Response<PullRequest>) -> Void) -> URLSessionDataTaskProtocol? {
+
+        let router = PullRequestRouter.readPullRequestByURL(configuration, url)
+        return router.load(session, dateDecodingStrategy: .formatted(Time.rfc3339DateFormatter), expectedResultType: PullRequest.self) { pullRequest, error in
+            if let error = error {
+                completion(Response.failure(error))
+            } else {
+                if let pullRequest = pullRequest {
+                    completion(Response.success(pullRequest))
+                }
+            }
+        }
+    }
 
     /**
     Get a list of pull requests
@@ -143,11 +160,13 @@ public extension Octokit {
 
 enum PullRequestRouter: JSONPostRouter {
     case readPullRequest(Configuration, String, String, String)
+    case readPullRequestByURL(Configuration, URL)
     case readPullRequests(Configuration, String, String, String?, Openness, SortType, SortDirection)
 
     var method: HTTPMethod {
         switch self {
         case .readPullRequest,
+             .readPullRequestByURL,
              .readPullRequests:
             return .GET
         }
@@ -163,6 +182,7 @@ enum PullRequestRouter: JSONPostRouter {
     var configuration: Configuration {
         switch self {
         case .readPullRequest(let config, _, _, _): return config
+        case .readPullRequestByURL(let config, _): return config
         case .readPullRequests(let config, _, _, _, _, _, _): return config
         }
     }
@@ -170,6 +190,8 @@ enum PullRequestRouter: JSONPostRouter {
     var params: [String: Any] {
         switch self {
         case .readPullRequest(_, _, _, _):
+            return [:]
+        case .readPullRequestByURL(_, _):
             return [:]
         case .readPullRequests(_, _, _, let base, let state, let sort, let direction):
             var parameters = [
@@ -190,6 +212,8 @@ enum PullRequestRouter: JSONPostRouter {
         switch self {
         case .readPullRequest(_, let owner, let repository, let number):
             return "repos/\(owner)/\(repository)/pulls/\(number)"
+        case .readPullRequestByURL(_, let url):
+            return url.path
         case .readPullRequests(_, let owner, let repository, _, _, _, _):
             return "repos/\(owner)/\(repository)/pulls"
         }
