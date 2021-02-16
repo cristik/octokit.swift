@@ -27,9 +27,10 @@ extension Review: Codable {
 extension Review {
     public enum State: String, Codable, Equatable {
         case approved = "APPROVED"
-        case comment = "COMMENT"
+        case comment = "COMMENTED"
         case dismissed = "DISMISSED"
         case pending = "PENDING"
+        case changesRequested = "CHANGES_REQUESTED"
     }
 }
 
